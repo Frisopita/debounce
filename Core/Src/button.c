@@ -12,57 +12,33 @@
 
 int time_duration = 5;
 
-Button_TypeDef button;
+Button_TypeDef button = {BUTTON_GPIO_Port, BUTTON_Pin, DEFAULT_DEBOUNCE_TIMEOUT_MS, 0, GPIO_PIN_RESET};
 
 uint8_t button_read_debounce(void)
 {
-	if(HAL_GetTick() - button.debounceTick > DEFAULT_DEBOUNCE_TIMEOUT_MS)
-	{
-		button.debounceTick = HAL_GetTick();
-		button.state = HAL_GPIO_ReadPin(button.port, button.pin);
-		if( button.state == GPIO_PIN_SET)
-		{
-			//Pressed
-			//HAL_GPIO_WritePin(DBG_LED_GPIO_Port, DBG_LED_Pin, GPIO_PIN_SET);
-			button.pressedTick = HAL_GetTick();
-		}
-		if(HAL_GPIO_ReadPin(button.port, button.pin) == GPIO_PIN_RESET)
-		{
-			//Released
-			//HAL_GPIO_WritePin(DBG_LED_GPIO_Port, DBG_LED_Pin, GPIO_PIN_RESET);
-			button.releasedTick = HAL_GetTick();
-			if(button.releasedTick > button.pressedTick)
-			{
-				button.pressedTime = button.releasedTick - button.pressedTick;
-			}
-			else if(button.releasedTick < button.pressedTick)
-			{
-				button.pressedTime = ((0xFFFFFFFF - button.releasedTick) - button.pressedTick) + 1;
-			}
-			else
-			{
-				button.pressedTime = 0;
-			}
+	uint32_t current_time = HAL_GetTick();
+	uint8_t current_state = HAL_GPIO_ReadPin(button.port, button.pin);
 
-			if(button.pressedTime > DEFAULT_LONG_HOLD_TIMEOUT)
-			{
-				button.event = LONG_CLICK;
-				button.hasPendingAction = true;
+	// Verificar si ha pasado el tiempo de debounce
+	if (current_time - button.last_read_time >= button.debounce_time_ms) {
+		// Si el estado actual es diferente al estado anterior
+		if (current_state != button.last_state) {
+			// Actualizar el último tiempo leído
+			button.last_read_time = current_time;
+			// Si el botón ha sido presionado
+			if (current_state == GPIO_PIN_SET) {
+				button.last_state = current_state;
+				return PRESSED;
 			}
-			else if(button.pressedTime > DEFAULT_HOLD_TIMEOUT_MS)
-			{
-				button.event = PRESSED;
-				button.hasPendingAction = true;
-
-			}
-			else if(button.pressedTime > DEFAULT_CLICK_TIMEOUT_MS)
-			{
-				button.event = RELEASED;
-				button.hasPendingAction = true;
+			// Si el botón ha sido liberado
+			else {
+				button.last_state = current_state;
+				return RELEASED;
 			}
 		}
-
 	}
+	return IDLE;
+
 }
 
 void button_handler(void)
@@ -74,15 +50,13 @@ void button_handler(void)
 
 	switch (event) {
 	case PRESSED:
-		motorRight_on();
-		HAL_Delay(time_duration * 1000);
-		motorRight_off();
+		//motorRight_on();
+		//HAL_Delay(time_duration * 1000);
+		//motorRight_off();
 		break;
 	case RELEASED:
-		led_on();
 		pump_on();
 		HAL_Delay(time_duration * 1000);
-		led_off();
 		pump_off();
 		/*motorRight_on();
 		motorLeft_off();
