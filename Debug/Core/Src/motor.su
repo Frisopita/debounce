@@ -1,0 +1,6 @@
+../Core/Src/motor.c:14:6:motorRight_on	8	static
+../Core/Src/motor.c:19:6:motorRight_off	8	static
+../Core/Src/motor.c:24:6:motorLeft_on	8	static
+../Core/Src/motor.c:29:6:motorLeft_off	8	static
+../Core/Src/motor.c:34:6:motor_setVelocityRight	16	static
+../Core/Src/motor.c:43:6:motor_setVelocityLeft	16	static
