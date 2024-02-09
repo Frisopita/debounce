@@ -1,2 +1,2 @@
-../Core/Src/button.c:17:9:button_read_debounce	4
-../Core/Src/button.c:44:6:button_handler	5
+../Core/Src/button.c:19:9:button_read_debounce	5
+../Core/Src/button.c:52:6:button_handler	6

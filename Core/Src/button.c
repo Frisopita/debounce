@@ -10,89 +10,77 @@
 #include "pump.h"
 #include "led.h"
 
-int time_duration = 5;
-
 Button_TypeDef button = {BUTTON_GPIO_Port, BUTTON_Pin, DEFAULT_DEBOUNCE_TIMEOUT_MS, 0, GPIO_PIN_RESET};
+
+uint8_t isEvent = 0;
+extern int time_duration;
+extern uint8_t isButton;
 
 uint8_t button_read_debounce(void)
 {
-	uint32_t current_time = HAL_GetTick();
 	uint8_t current_state = HAL_GPIO_ReadPin(button.port, button.pin);
+	uint32_t current_time = HAL_GetTick();
+	isEvent = 0;
 
-	// Verificar si ha pasado el tiempo de debounce
-	if (current_time - button.last_read_time >= button.debounce_time_ms) {
-		// Si el estado actual es diferente al estado anterior
-		if (current_state != button.last_state) {
-			// Actualizar el último tiempo leído
+	if (current_state != button.last_state){
+		button.last_state = current_state;
+		isEvent = 1;
+		if (current_time - button.last_read_time >= DEFAULT_DEBOUNCE_TIMEOUT_MS){
 			button.last_read_time = current_time;
-			// Si el botón ha sido presionado
-			if (current_state == GPIO_PIN_SET) {
-				button.last_state = current_state;
-				return PRESSED;
+
+			if (current_state == GPIO_PIN_SET)
+			{
+				button.pressedTick = current_time;
 			}
-			// Si el botón ha sido liberado
-			else {
-				button.last_state = current_state;
-				return RELEASED;
+			else
+			{
+				button.releasedTick = current_time;
+				if (button.releasedTick - button.pressedTick >= DEFAULT_LONG_HOLD_TIMEOUT )
+				{
+					button.event = LONG_CLICK;
+				}
+				else
+				{
+					button.event = RELEASED;
+				}
 			}
 		}
 	}
-	return IDLE;
-
+	return isEvent;
 }
 
 void button_handler(void)
 {
-	BUTTON_EVENT_ENUM_t event = button_read_debounce();
-	//uint32_t current_time_handler = HAL_GetTick();
-	//uint32_t last_action_time = 0;
-	//uint32_t elapsed_time = current_time_handler - last_action_time;
+	if (button_read_debounce())
+	{
+		switch (button.event)
+		{
+		case IDLE:
+		{
+			isButton = 0;
+			break;
+		}
+		case RELEASED:
+		{
+			isButton = 1;
+			break;
+		}
+		case PRESSED:
+		{
+			isButton = 2;
+			break;
+		}
+		case LONG_CLICK:
+		{
+			isButton = 3;
+			break;
+		}
+		default:
+			break;
+		}
 
-	switch (event) {
-	case PRESSED:
-		//motorRight_on();
-		//HAL_Delay(time_duration * 1000);
-		//motorRight_off();
-		break;
-	case RELEASED:
-		pump_on();
-		HAL_Delay(time_duration * 1000);
-		pump_off();
-		/*motorRight_on();
-		motorLeft_off();
-		HAL_Delay(time_duration * 1000);
-		motorRight_on();
-		motorLeft_off();
-		HAL_Delay(1000);
-		motorRight_off();
-		motorLeft_on();
-		HAL_Delay(time_duration * 1000);
-		led_off();
-		pump_off();
-		motorRight_off();
-		motorLeft_off();*/
-		break;
-	case LONG_CLICK:
-		led_on();
-		HAL_Delay(time_duration * 1000);
-		led_off();
-		/*pump_on();
-		motorRight_on();
-		motorLeft_off();
-		HAL_Delay(time_duration * 1000);
-		motorRight_off();
-		motorLeft_off();
-		HAL_Delay(1000);
-		motorRight_off();
-		motorLeft_on();
-		HAL_Delay(time_duration * 1000);
-		led_off();
-		pump_off();
-		motorRight_off();
-		motorLeft_off();*/
-
-	default:
-		break;
 	}
+
+
 }
 
