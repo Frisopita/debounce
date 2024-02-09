@@ -72,7 +72,8 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 
-#define TIME_DURATION 5000UL
+#define TIME_DURATION_1 1000UL
+#define TIME_DURATION_2 5000UL
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

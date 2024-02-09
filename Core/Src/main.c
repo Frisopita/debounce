@@ -121,18 +121,23 @@ int main(void)
 		button_handler();
 		current_time = HAL_GetTick();
 
-		if (isButton == 1)
+		switch(isButton){
+		case 0:
+		{
+			break;
+		}
+		case 1:
 		{
 			switch (state)
 			{
 			case STATE_1:
 			{
-					led_on();
-					pump_on();
-					motorRight_on();
-					motorLeft_off();
-					last_action_time = HAL_GetTick();
-					state = STATE_2;
+				led_on();
+				pump_on();
+				motorRight_on();
+				motorLeft_off();
+				last_action_time = HAL_GetTick();
+				state = STATE_2;
 
 				break;
 			}
@@ -143,11 +148,11 @@ int main(void)
 					last_action_time =HAL_GetTick();
 					flagFirstTime = 0;
 				}
-				if((current_time - last_action_time)>= (TIME_DURATION))
+				if((current_time - last_action_time)>= (TIME_DURATION_2))
 				{
 					flagFirstTime =1;
 					motorRight_off();
-					motorLeft_on();
+					motorLeft_off();
 					last_action_time = HAL_GetTick();
 					state = STATE_3;
 				}
@@ -160,7 +165,24 @@ int main(void)
 					last_action_time =HAL_GetTick();
 					flagFirstTime = 0;
 				}
-				if((current_time - last_action_time)>=(TIME_DURATION))
+				if((current_time - last_action_time)>= (TIME_DURATION_1))
+				{
+					flagFirstTime =1;
+					motorRight_off();
+					motorLeft_on();
+					last_action_time = HAL_GetTick();
+					state = STATE_4;
+				}
+				break;
+			}
+			case STATE_4:
+			{
+				if(flagFirstTime ==1)
+				{
+					last_action_time =HAL_GetTick();
+					flagFirstTime = 0;
+				}
+				if((current_time - last_action_time)>=(TIME_DURATION_2))
 				{
 					flagFirstTime =1;
 					led_off();
@@ -174,6 +196,17 @@ int main(void)
 				break;
 			}
 			}
+			break;
+
+		}
+		case 2:
+		{
+			break;
+		}
+		case 3:
+		{
+			break;
+		}
 		}
 
 

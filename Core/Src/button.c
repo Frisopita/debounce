@@ -63,16 +63,19 @@ void button_handler(void)
 		case RELEASED:
 		{
 			isButton = 1;
+			button.event = IDLE;
 			break;
 		}
 		case PRESSED:
 		{
 			isButton = 2;
+			button.event = IDLE;
 			break;
 		}
 		case LONG_CLICK:
 		{
 			isButton = 3;
+			button.event = IDLE;
 			break;
 		}
 		default:
